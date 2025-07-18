@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -55,4 +56,15 @@ public class ProductController {
         Page<FilterProductResponse> page = productService.filterProducts(filter);
         return ResponseEntity.ok(new ApiResponse("Lọc sản phẩm thành công", page));
     }
+    @GetMapping("/admin-check")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> adminCheck() {
+        return ResponseEntity.ok("OK - Admin Access");
+    }
+    @PutMapping("/test")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> testPut() {
+        return ResponseEntity.ok("PUT OK");
+    }
+
 }

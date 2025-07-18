@@ -9,8 +9,10 @@ import com.example.rubiesfashionstore.form.user.LoginForm;
 import com.example.rubiesfashionstore.jwt.JwtUtil;
 import com.example.rubiesfashionstore.model.User;
 import com.example.rubiesfashionstore.repository.UserRepository;
+import com.example.rubiesfashionstore.security.CustomUserDetails;
 import com.example.rubiesfashionstore.service.UserService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -64,7 +66,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getMyProfile(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
         return modelMapper.map(user, UserResponse.class);
     }
 }
