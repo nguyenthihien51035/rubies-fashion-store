@@ -3,19 +3,16 @@ package com.example.rubiesfashionstore.controller;
 import com.example.rubiesfashionstore.dto.ApiResponse;
 import com.example.rubiesfashionstore.dto.response.FilterProductResponse;
 import com.example.rubiesfashionstore.dto.response.ProductResponse;
-import com.example.rubiesfashionstore.form.product.CreateAndUpdateProductForm;
-import com.example.rubiesfashionstore.form.product.FilterProduct;
-import com.example.rubiesfashionstore.model.Product;
+import com.example.rubiesfashionstore.form.product.ProductForm;
+import com.example.rubiesfashionstore.form.product.FilterProductForm;
 import com.example.rubiesfashionstore.service.ProductService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-//@RequiredArgsConstructor
 @RequestMapping("api/v1/products")
 public class ProductController {
     private final ProductService productService;
@@ -26,7 +23,7 @@ public class ProductController {
 
     //Tạo sản phẩm
     @PostMapping
-    public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody CreateAndUpdateProductForm form) {
+    public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody ProductForm form) {
         ProductResponse productRes = productService.createProduct(form);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Tạo sản phẩm thành công", productRes));
     }
@@ -38,10 +35,9 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse("Chi tiết sản phẩm", product));
     }
 
-
     //Cập nhật sản phẩm
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateProduct(@PathVariable Integer id, @Valid @RequestBody CreateAndUpdateProductForm form) {
+    public ResponseEntity<ApiResponse> updateProduct(@PathVariable Integer id, @Valid @RequestBody ProductForm form) {
         ProductResponse productResponse = productService.updateProduct(id, form);
         return ResponseEntity.ok(new ApiResponse("Cập nhật sản phẩm thành công", productResponse));
     }
@@ -55,7 +51,7 @@ public class ProductController {
 
     //Filter
     @PostMapping("filter")
-    public ResponseEntity<ApiResponse> filterProducts(@RequestBody FilterProduct filter) {
+    public ResponseEntity<ApiResponse> filterProducts(@RequestBody FilterProductForm filter) {
         Page<FilterProductResponse> page = productService.filterProducts(filter);
         return ResponseEntity.ok(new ApiResponse("Lọc sản phẩm thành công", page));
     }

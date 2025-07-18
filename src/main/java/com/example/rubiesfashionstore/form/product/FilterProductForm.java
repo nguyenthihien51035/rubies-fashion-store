@@ -1,13 +1,10 @@
 package com.example.rubiesfashionstore.form.product;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 
 //@Getter
 //@Setter
-public class FilterProduct {
+public class FilterProductForm {
     private String name;
     private String sku;
     private Integer categoryId;

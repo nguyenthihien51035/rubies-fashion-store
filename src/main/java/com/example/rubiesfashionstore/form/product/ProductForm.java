@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CreateAndUpdateProductForm {
+public class ProductForm {
     @NotBlank(message = "Tên sản phẩm không được để trống")
     private String name;
 
@@ -30,7 +30,7 @@ public class CreateAndUpdateProductForm {
     private Boolean inStock;
 
     private List<String> imageUrls;
-    private List<ProductVariantRequest> variant;
+    private List<ProductVariantForm> variant;
 
     public String getName() {
         return name;
@@ -96,11 +96,11 @@ public class CreateAndUpdateProductForm {
         this.imageUrls = imageUrls;
     }
 
-    public List<ProductVariantRequest> getVariant() {
+    public List<ProductVariantForm> getVariant() {
         return variant;
     }
 
-    public void setVariant(List<ProductVariantRequest> variant) {
+    public void setVariant(List<ProductVariantForm> variant) {
         this.variant = variant;
     }
 }

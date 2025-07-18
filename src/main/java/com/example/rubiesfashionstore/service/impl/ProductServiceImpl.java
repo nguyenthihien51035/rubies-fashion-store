@@ -4,12 +4,11 @@ import com.example.rubiesfashionstore.dto.response.FilterProductResponse;
 import com.example.rubiesfashionstore.dto.response.ProductResponse;
 import com.example.rubiesfashionstore.dto.response.ProductVariantResponse;
 import com.example.rubiesfashionstore.exception.BusinessException;
-import com.example.rubiesfashionstore.exception.ConflictException;
 import com.example.rubiesfashionstore.exception.ErrorCodeConstant;
 import com.example.rubiesfashionstore.exception.NotFoundException;
-import com.example.rubiesfashionstore.form.product.CreateAndUpdateProductForm;
-import com.example.rubiesfashionstore.form.product.FilterProduct;
-import com.example.rubiesfashionstore.form.product.ProductVariantRequest;
+import com.example.rubiesfashionstore.form.product.ProductForm;
+import com.example.rubiesfashionstore.form.product.FilterProductForm;
+import com.example.rubiesfashionstore.form.product.ProductVariantForm;
 import com.example.rubiesfashionstore.model.*;
 import com.example.rubiesfashionstore.model.Color;
 import com.example.rubiesfashionstore.repository.CategoryRepository;
@@ -19,7 +18,6 @@ import com.example.rubiesfashionstore.repository.specification.ProductSpecificat
 import com.example.rubiesfashionstore.service.ProductService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.List;
@@ -85,9 +82,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponse createProduct(CreateAndUpdateProductForm form) {
+    public ProductResponse createProduct(ProductForm form) {
         if (productRepository.existsBySku(form.getSku())) {
-            throw new ConflictException(ErrorCodeConstant.DUPLICATE_SKU, "SKU đã tồn tại: " + form.getSku());
+            throw new BusinessException(ErrorCodeConstant.DUPLICATE_SKU, "SKU đã tồn tại: " + form.getSku());
         }
 
         Product product = buildProductFromForm(new Product(), form);
@@ -124,7 +121,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponse updateProduct(Integer id, @Valid CreateAndUpdateProductForm form) {
+    public ProductResponse updateProduct(Integer id, @Valid ProductForm form) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.PRODUCT_NOT_FOUND_BY_ID,
                         "Không tìm thấy sản phẩm có ID: " + id));
@@ -133,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
         if (form.getSku() != null && !form.getSku().equals(existingProduct.getSku())) {
             Optional<Product> productWithSameSku = productRepository.findBySku(form.getSku());
             if (productWithSameSku.isPresent() && !productWithSameSku.get().getId().equals(id)) {
-                throw new ConflictException(ErrorCodeConstant.DUPLICATE_SKU, "SKU đã tồn tại: " + form.getSku());
+                throw new BusinessException(ErrorCodeConstant.DUPLICATE_SKU, "SKU đã tồn tại: " + form.getSku());
             }
             existingProduct.setSku(form.getSku());
         }
@@ -180,7 +177,7 @@ public class ProductServiceImpl implements ProductService {
                     ));
 
 
-            for (ProductVariantRequest variantReq : form.getVariant()) {
+            for (ProductVariantForm variantReq : form.getVariant()) {
                 String key = variantReq.getColorId() + "-" + variantReq.getSize().name();
 
                 Color color = colorRepository.findById(variantReq.getColorId())
@@ -243,7 +240,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<FilterProductResponse> filterProducts(FilterProduct filterProduct) {
+    public Page<FilterProductResponse> filterProducts(FilterProductForm filterProduct) {
         Specification<Product> specification = ProductSpecification.alwaysTrue()
                 .and(ProductSpecification.hasName(filterProduct.getName()))
                 .and(ProductSpecification.hasCategory(filterProduct.getCategoryId()))
@@ -257,7 +254,7 @@ public class ProductServiceImpl implements ProductService {
         return page.map(product -> modelMapper.map(product, FilterProductResponse.class));
     }
 
-    private Product buildProductFromForm(Product product, CreateAndUpdateProductForm form) {
+    private Product buildProductFromForm(Product product, ProductForm form) {
         // Validate category
         Category category = categoryRepository.findById(form.getCategoryId())
                 .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.CATEGORY_NOT_FOUND_BY_ID,
@@ -298,7 +295,7 @@ public class ProductServiceImpl implements ProductService {
         if (form.getVariant() != null) {
             List<ProductVariant> variants = new ArrayList<>();
 
-            for (ProductVariantRequest variantReq : form.getVariant()) {
+            for (ProductVariantForm variantReq : form.getVariant()) {
                 Color color = colorRepository.findById(variantReq.getColorId())
                         .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID,
                                 "Không tìm thấy màu với ID: " + variantReq.getColorId()));

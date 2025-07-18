@@ -2,24 +2,21 @@ package com.example.rubiesfashionstore.service;
 
 import com.example.rubiesfashionstore.dto.response.FilterProductResponse;
 import com.example.rubiesfashionstore.dto.response.ProductResponse;
-import com.example.rubiesfashionstore.form.product.CreateAndUpdateProductForm;
-import com.example.rubiesfashionstore.form.product.FilterProduct;
-import com.example.rubiesfashionstore.model.Product;
+import com.example.rubiesfashionstore.form.product.ProductForm;
+import com.example.rubiesfashionstore.form.product.FilterProductForm;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-
-import java.util.Optional;
 
 public interface ProductService {
 
     ProductResponse getProductById(Integer id);
 
-    ProductResponse createProduct(@Valid CreateAndUpdateProductForm createProduct);
+    ProductResponse createProduct(@Valid ProductForm createProduct);
 
-    ProductResponse updateProduct(Integer id, @Valid CreateAndUpdateProductForm updateProduct);
+    ProductResponse updateProduct(Integer id, @Valid ProductForm updateProduct);
 
     void deleteProduct(Integer id);
 
-    Page<FilterProductResponse> filterProducts(FilterProduct filterProduct);
+    Page<FilterProductResponse> filterProducts(FilterProductForm filterProduct);
 
 }

@@ -1,9 +1,8 @@
 package com.example.rubiesfashionstore.form.product;
 
 import com.example.rubiesfashionstore.model.Size;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-public class ProductVariantRequest {
+
+public class ProductVariantForm {
     private Integer colorId;
 
     private String colorName;

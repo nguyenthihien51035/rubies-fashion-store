@@ -2,10 +2,7 @@ package com.example.rubiesfashionstore.controller;
 
 import com.example.rubiesfashionstore.dto.ApiResponse;
 import com.example.rubiesfashionstore.dto.response.ColorResponse;
-import com.example.rubiesfashionstore.form.product.CategoryForm;
 import com.example.rubiesfashionstore.form.product.ColorForm;
-import com.example.rubiesfashionstore.modelmapper.ColorMapper;
-import com.example.rubiesfashionstore.repository.ColorRepository;
 import com.example.rubiesfashionstore.service.ColorService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,11 +15,9 @@ import java.util.List;
 @RequestMapping("api/v1/colors")
 public class ColorController {
     public final ColorService colorService;
-    public final ColorMapper colorMapper;
 
-    public ColorController(ColorService colorService, ColorMapper colorMapper) {
+    public ColorController(ColorService colorService    ) {
         this.colorService = colorService;
-        this.colorMapper = colorMapper;
     }
 
     @PostMapping()

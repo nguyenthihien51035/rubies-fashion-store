@@ -16,11 +16,13 @@ public class Color {
     @Column(unique = true)
     private String name;
 
+    @Column(unique = true)
+    private String hexCode;
+
     // 1 màu có thể được dùng trong nhiều biến thể sản phẩm
     @OneToMany(mappedBy = "color", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> productVariants = new ArrayList<>();
 
-    // Getter - Setter
     public Integer getId() {
         return id;
     }
@@ -35,6 +37,14 @@ public class Color {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getHexCode() {
+        return hexCode;
+    }
+
+    public void setHexCode(String hexCode) {
+        this.hexCode = hexCode;
     }
 
     public List<ProductVariant> getProductVariants() {

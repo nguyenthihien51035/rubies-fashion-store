@@ -6,12 +6,11 @@ import com.example.rubiesfashionstore.exception.ErrorCodeConstant;
 import com.example.rubiesfashionstore.exception.NotFoundException;
 import com.example.rubiesfashionstore.form.product.ColorForm;
 import com.example.rubiesfashionstore.model.Color;
-import com.example.rubiesfashionstore.modelmapper.ColorMapper;
 import com.example.rubiesfashionstore.repository.ColorRepository;
 import com.example.rubiesfashionstore.service.ColorService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,23 +18,27 @@ import java.util.stream.Collectors;
 @Service
 public class ColorServiceImpl implements ColorService {
     public final ColorRepository colorRepository;
-    public final ColorMapper colorMapper;
+    public final ModelMapper modelMapper;
 
-    public ColorServiceImpl(ColorRepository colorRepository, ColorMapper colorMapper) {
+    public ColorServiceImpl(ColorRepository colorRepository, ModelMapper modelMapper) {
         this.colorRepository = colorRepository;
-        this.colorMapper = colorMapper;
+        this.modelMapper = modelMapper;
     }
 
     @Override
     @Transactional
     public ColorResponse createColor(ColorForm form) {
         if(colorRepository.existsByName(form.getName())) {
-        throw new BusinessException("Màu đã tồn tại", ErrorCodeConstant.COLOR_NAME_ALREADY_EXISTS);
+            throw new BusinessException("Màu đã tồn tại", ErrorCodeConstant.COLOR_NAME_ALREADY_EXISTS);
         }
-        Color color = new Color();
-        color.setName(form.getName());
+
+        if(colorRepository.existsByHexCode(form.getHexCode())) {
+            throw new BusinessException("Mã hex đã tồn tại", ErrorCodeConstant.HEX_CODE_ALREADY_EXISTS);
+        }
+
+        Color color = modelMapper.map(form, Color.class);
         Color saved = colorRepository.save(color);
-        return colorMapper.mapToResponse(saved);
+        return modelMapper.map(saved, ColorResponse.class);
     }
 
     @Override
@@ -43,13 +46,19 @@ public class ColorServiceImpl implements ColorService {
         Color color = colorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy màu trong hệ thống", ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID));
 
-        if(colorRepository.existsByName(form.getName())) {
+        if(!color.getName().equalsIgnoreCase(form.getName())
+                && colorRepository.existsByName(form.getName())) {
             throw new BusinessException("Màu đã tồn tại", ErrorCodeConstant.COLOR_NAME_ALREADY_EXISTS);
         }
 
-        color.setName(form.getName());
+        if(!color.getHexCode().equalsIgnoreCase(form.getHexCode())
+                && colorRepository.existsByHexCode(form.getHexCode())) {
+            throw new BusinessException("Mã hex đã tồn tại", ErrorCodeConstant.HEX_CODE_ALREADY_EXISTS);
+        }
+
+        modelMapper.map(form, color);
         Color saved = colorRepository.save(color);
-        return colorMapper.mapToResponse(saved);
+        return modelMapper.map(saved, ColorResponse.class);
     }
 
     @Override
@@ -63,14 +72,14 @@ public class ColorServiceImpl implements ColorService {
     public ColorResponse getColorById(Integer id) {
         Color color = colorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy trong hệ thống", ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID));
-        return colorMapper.mapToResponse(color);
+        return modelMapper.map(color, ColorResponse.class);
     }
 
     @Override
     public List<ColorResponse> getAllColor() {
         return colorRepository.findAll()
                 .stream()
-                .map(colorMapper::mapToResponse)
+                .map(color -> modelMapper.map(color, ColorResponse.class))
                 .collect(Collectors.toList());
     }
 }

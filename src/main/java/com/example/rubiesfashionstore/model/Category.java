@@ -14,6 +14,8 @@ public class Category {
     @Column(unique = true)
     private String name;
 
+    private String image;
+
     @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();
 
@@ -31,6 +33,14 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public List<Product> getProducts() {

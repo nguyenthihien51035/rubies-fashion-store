@@ -1,7 +1,5 @@
 package com.example.rubiesfashionstore.dto.response;
 
-import com.example.rubiesfashionstore.form.product.ProductVariantRequest;
-
 import java.math.BigDecimal;
 import java.util.List;
 

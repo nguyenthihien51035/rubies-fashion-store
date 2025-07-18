@@ -26,18 +26,11 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse(e.getMessage(), null, e.getErrorCode()));
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiResponse> handleConflictException(ConflictException e) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT) // 409
-                .body(new ApiResponse(e.getMessage(), null, e.getErrorCode()));
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handleMethodArgNotValid(MethodArgumentNotValidException e) {
         StringBuilder sb = new StringBuilder("Dữ liệu không hợp lệ: ");
         e.getBindingResult().getAllErrors().forEach(err ->
-                sb.append(err.getDefaultMessage()).append("; ")
+                sb.append(err.getDefaultMessage()).append(";")
         );
         return ResponseEntity.badRequest().body(new ApiResponse(sb.toString(), null, "400000"));
     }
