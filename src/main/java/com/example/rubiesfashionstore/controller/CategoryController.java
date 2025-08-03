@@ -3,9 +3,9 @@ package com.example.rubiesfashionstore.controller;
 import com.example.rubiesfashionstore.dto.ApiResponse;
 import com.example.rubiesfashionstore.dto.response.CategoryResponse;
 import com.example.rubiesfashionstore.form.product.CategoryForm;
-import com.example.rubiesfashionstore.model.Category;
 import com.example.rubiesfashionstore.service.CategoryService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/v1/categories")
 public class CategoryController {
     private final CategoryService categoryService;
-
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
 
     @PostMapping()
     public ResponseEntity<ApiResponse> createCategory(@Valid @RequestBody CategoryForm form) {
@@ -41,7 +38,7 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getCategoryById(@PathVariable Integer id) {
-        CategoryResponse response =  categoryService.getCategoryById(id);
+        CategoryResponse response = categoryService.getCategoryById(id);
         return ResponseEntity.ok(new ApiResponse("Truy xuất danh mục thành công", response));
     }
 

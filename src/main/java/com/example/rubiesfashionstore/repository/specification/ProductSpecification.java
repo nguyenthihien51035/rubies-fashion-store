@@ -13,9 +13,9 @@ public class ProductSpecification {
 
     public static Specification<Product> hasName(String keyword) {
         return (root, query, criteriaBuilder) -> {
-            if(keyword == null || keyword.isBlank())
+            if (keyword == null || keyword.isBlank())
                 return null;
-            return  criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%");
+            return criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%");
         };
     }
 
@@ -37,7 +37,7 @@ public class ProductSpecification {
 
     public static Specification<Product> priceBetween(BigDecimal min, BigDecimal max) {
         return (root, query, criteriaBuilder) -> {
-            if(min == null || max == null)
+            if (min == null || max == null)
                 return null;
             return criteriaBuilder.between(root.get("price"), min, max);
         };
@@ -53,7 +53,7 @@ public class ProductSpecification {
 
     public static Specification<Product> isInStock(Boolean inStock) {
         return (root, query, criteriaBuilder) -> {
-            if(inStock == null || !inStock)
+            if (inStock == null || !inStock)
                 return null;
             return criteriaBuilder.isTrue((root.get("inStock")));
         };

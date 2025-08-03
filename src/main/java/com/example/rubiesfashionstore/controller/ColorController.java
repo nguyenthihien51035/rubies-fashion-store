@@ -5,6 +5,7 @@ import com.example.rubiesfashionstore.dto.response.ColorResponse;
 import com.example.rubiesfashionstore.form.product.ColorForm;
 import com.example.rubiesfashionstore.service.ColorService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,13 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/v1/colors")
 public class ColorController {
     public final ColorService colorService;
-
-    public ColorController(ColorService colorService    ) {
-        this.colorService = colorService;
-    }
 
     @PostMapping()
     public ResponseEntity<ApiResponse> createColor(@Valid @RequestBody ColorForm form) {

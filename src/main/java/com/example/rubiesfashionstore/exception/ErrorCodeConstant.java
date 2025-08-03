@@ -3,18 +3,21 @@ package com.example.rubiesfashionstore.exception;
 public class ErrorCodeConstant {
     //400 - BAD REQUEST
     public static final String INVALID_PRICE = "400101";
-    public static final String INVALID_SKU_FORMAT = "400102";
     public static final String INVALID_SIZE = "400103";
     public static final String CATEGORY_NAME_ALREADY_EXISTS = "400104";
     public static final String COLOR_NAME_ALREADY_EXISTS = "400104";
     public static final String HEX_CODE_ALREADY_EXISTS = "400105";
     public static final String EMAIL_ALREADY_EXISTS = "400106";
+    public static final String PHONE_ALREADY_EXISTS = "400107";
+    public static final String INVALID_PASSWORD = "400108";
+    public static final String INVALID_OTP = "400109";
+    public static final String USER_INACTIVE = "400010"; // Tài khoản bị khoá
 
     //401 - UNAUTHORIED
     public static final String INVALID_LOGIN_CREDENTIALS = "401001"; // Thông tin đăng nhập không chính xác
 
     //403 - FORBIDDE
-    public static final String USER_INACTIVE = "403001";              // Tài khoản bị khoá
+
 
     //404 - NOT FOUND
     public static final String PRODUCT_NOT_FOUND_BY_ID = "404101";
@@ -29,4 +32,6 @@ public class ErrorCodeConstant {
 
     // 500 - SERVER ERROR
     public static final String SERVER_ERROR = "500001";
+
+
 }

@@ -6,8 +6,8 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "product_images")
-//@Getter
-//@Setter
+@Getter
+@Setter
 public class ProductImage {
 
     @Id
@@ -19,28 +19,4 @@ public class ProductImage {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
 }

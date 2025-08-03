@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer>, JpaSpecificationExecutor<Product> {
-
     boolean existsBySku(String sku);
 
     //Tìm kiếm theo danh mục

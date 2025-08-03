@@ -62,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse getCategoryById(Integer id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(()-> new NotFoundException("Không tìm thấy danh mục trong hệ thống", ErrorCodeConstant.CATEGORY_NOT_FOUND_BY_ID));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy danh mục trong hệ thống", ErrorCodeConstant.CATEGORY_NOT_FOUND_BY_ID));
         return modelMapper.map(category, CategoryResponse.class);
     }
 

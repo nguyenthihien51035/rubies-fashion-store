@@ -28,11 +28,11 @@ public class ColorServiceImpl implements ColorService {
     @Override
     @Transactional
     public ColorResponse createColor(ColorForm form) {
-        if(colorRepository.existsByName(form.getName())) {
+        if (colorRepository.existsByName(form.getName())) {
             throw new BusinessException("Màu đã tồn tại", ErrorCodeConstant.COLOR_NAME_ALREADY_EXISTS);
         }
 
-        if(colorRepository.existsByHexCode(form.getHexCode())) {
+        if (colorRepository.existsByHexCode(form.getHexCode())) {
             throw new BusinessException("Mã hex đã tồn tại", ErrorCodeConstant.HEX_CODE_ALREADY_EXISTS);
         }
 
@@ -46,12 +46,12 @@ public class ColorServiceImpl implements ColorService {
         Color color = colorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy màu trong hệ thống", ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID));
 
-        if(!color.getName().equalsIgnoreCase(form.getName())
+        if (!color.getName().equalsIgnoreCase(form.getName())
                 && colorRepository.existsByName(form.getName())) {
             throw new BusinessException("Màu đã tồn tại", ErrorCodeConstant.COLOR_NAME_ALREADY_EXISTS);
         }
 
-        if(!color.getHexCode().equalsIgnoreCase(form.getHexCode())
+        if (!color.getHexCode().equalsIgnoreCase(form.getHexCode())
                 && colorRepository.existsByHexCode(form.getHexCode())) {
             throw new BusinessException("Mã hex đã tồn tại", ErrorCodeConstant.HEX_CODE_ALREADY_EXISTS);
         }

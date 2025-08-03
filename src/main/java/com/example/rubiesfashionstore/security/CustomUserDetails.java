@@ -2,21 +2,20 @@ package com.example.rubiesfashionstore.security;
 
 import com.example.rubiesfashionstore.model.User;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+
 @Getter
+@Setter
 public class CustomUserDetails implements UserDetails {
     private final User user;
 
     public CustomUserDetails(User user) {
         this.user = user;
-    }
-
-    public User getUser() {
-        return this.user;
     }
 
     @Override

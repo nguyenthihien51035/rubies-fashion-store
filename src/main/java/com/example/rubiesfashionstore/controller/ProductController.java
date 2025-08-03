@@ -3,24 +3,22 @@ package com.example.rubiesfashionstore.controller;
 import com.example.rubiesfashionstore.dto.ApiResponse;
 import com.example.rubiesfashionstore.dto.response.FilterProductResponse;
 import com.example.rubiesfashionstore.dto.response.ProductResponse;
-import com.example.rubiesfashionstore.form.product.ProductForm;
 import com.example.rubiesfashionstore.form.product.FilterProductForm;
+import com.example.rubiesfashionstore.form.product.ProductForm;
 import com.example.rubiesfashionstore.service.ProductService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/v1/products")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
     private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     //Tạo sản phẩm
     @PostMapping
@@ -56,15 +54,4 @@ public class ProductController {
         Page<FilterProductResponse> page = productService.filterProducts(filter);
         return ResponseEntity.ok(new ApiResponse("Lọc sản phẩm thành công", page));
     }
-    @GetMapping("/admin-check")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> adminCheck() {
-        return ResponseEntity.ok("OK - Admin Access");
-    }
-    @PutMapping("/test")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> testPut() {
-        return ResponseEntity.ok("PUT OK");
-    }
-
 }
