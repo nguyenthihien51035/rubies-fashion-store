@@ -1,6 +1,6 @@
 package com.example.rubiesfashionstore.repository.specification;
 
-import com.example.rubiesfashionstore.model.Role;
+import com.example.rubiesfashionstore.enums.Role;
 import com.example.rubiesfashionstore.model.User;
 import org.springframework.data.jpa.domain.Specification;
 

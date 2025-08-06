@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductVariantResponse {
-    private Integer colorId;
     private String colorName;
     private String colorImageUrl;
     private String size;
@@ -15,8 +14,7 @@ public class ProductVariantResponse {
     public ProductVariantResponse() {
     }
 
-    public ProductVariantResponse(Integer colorId, String colorName, String colorImageUrl, String size, Integer quantity) {
-        this.colorId = colorId;
+    public ProductVariantResponse(String colorName, String colorImageUrl, String size, Integer quantity) {
         this.colorName = colorName;
         this.colorImageUrl = colorImageUrl;
         this.size = size;

@@ -1,6 +1,6 @@
 package com.example.rubiesfashionstore.form.user;
 
-import com.example.rubiesfashionstore.model.Role;
+import com.example.rubiesfashionstore.enums.Role;
 import lombok.Getter;
 import lombok.Setter;
 

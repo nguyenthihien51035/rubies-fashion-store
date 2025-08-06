@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +22,12 @@ public class ProductController {
     private final ProductService productService;
 
     //Tạo sản phẩm
-    @PostMapping
-    public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody ProductForm form) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse> createProduct(@ModelAttribute @Valid ProductForm form) {
         ProductResponse productRes = productService.createProduct(form);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Tạo sản phẩm thành công", productRes));
     }
+
 
     //Lấy sản phẩm theo id
     @GetMapping("/{id}")
@@ -35,8 +37,8 @@ public class ProductController {
     }
 
     //Cập nhật sản phẩm
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateProduct(@PathVariable Integer id, @Valid @RequestBody ProductForm form) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse> updateProduct(@PathVariable Integer id, @Valid @ModelAttribute ProductForm form) {
         ProductResponse productResponse = productService.updateProduct(id, form);
         return ResponseEntity.ok(new ApiResponse("Cập nhật sản phẩm thành công", productResponse));
     }

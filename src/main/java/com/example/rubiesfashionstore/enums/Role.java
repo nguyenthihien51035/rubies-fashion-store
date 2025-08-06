@@ -1,4 +1,4 @@
-package com.example.rubiesfashionstore.model;
+package com.example.rubiesfashionstore.enums;
 
 public enum Role {
     CUSTOMER,

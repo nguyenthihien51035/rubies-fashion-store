@@ -1,6 +1,6 @@
 package com.example.rubiesfashionstore.form.user;
 
-import com.example.rubiesfashionstore.model.Role;
+import com.example.rubiesfashionstore.enums.Role;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;

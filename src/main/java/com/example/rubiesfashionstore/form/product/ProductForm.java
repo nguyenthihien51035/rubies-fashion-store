@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,6 +35,8 @@ public class ProductForm {
 
     private Boolean inStock;
 
-    private List<String> imageUrls;
-    private List<ProductVariantForm> variant;
+    private MultipartFile[] imageFiles;
+
+    private ProductVariantForm[] variant;
+
 }

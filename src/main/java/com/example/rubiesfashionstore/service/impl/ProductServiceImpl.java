@@ -6,45 +6,43 @@ import com.example.rubiesfashionstore.dto.response.ProductVariantResponse;
 import com.example.rubiesfashionstore.exception.BusinessException;
 import com.example.rubiesfashionstore.exception.ErrorCodeConstant;
 import com.example.rubiesfashionstore.exception.NotFoundException;
-import com.example.rubiesfashionstore.form.product.ProductForm;
 import com.example.rubiesfashionstore.form.product.FilterProductForm;
+import com.example.rubiesfashionstore.form.product.ProductForm;
 import com.example.rubiesfashionstore.form.product.ProductVariantForm;
 import com.example.rubiesfashionstore.model.*;
-import com.example.rubiesfashionstore.model.Color;
 import com.example.rubiesfashionstore.repository.CategoryRepository;
 import com.example.rubiesfashionstore.repository.ColorRepository;
 import com.example.rubiesfashionstore.repository.ProductRepository;
 import com.example.rubiesfashionstore.repository.specification.ProductSpecification;
+import com.example.rubiesfashionstore.service.FileStorageService;
 import com.example.rubiesfashionstore.service.ProductService;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ColorRepository colorRepository;
     private final ModelMapper modelMapper;
-
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, ColorRepository colorRepository, ModelMapper modelMapper) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.colorRepository = colorRepository;
-        this.modelMapper = modelMapper;
-    }
+    private final FileStorageService fileStorageService;
 
     @Override
     public ProductResponse getProductById(Integer id) {
@@ -59,23 +57,19 @@ public class ProductServiceImpl implements ProductService {
         response.setInStock(product.getInStock());
         response.setCategoryName(product.getCategory().getName());
 
-// Tự map List<String> imageUrls
         List<String> imageUrls = product.getImages().stream()
                 .map(ProductImage::getImageUrl)
                 .collect(Collectors.toList());
+        response.setImageUrls(imageUrls);
 
-
-// Tự map List<VariantResponse>
         List<ProductVariantResponse> variants = product.getVariants().stream()
                 .map(variant -> new ProductVariantResponse(
-                        variant.getColor().getId(),
                         variant.getColor().getName(),
                         variant.getVariantImageUrl(),
                         variant.getSize().name(),
                         variant.getQuantity()
                 ))
                 .collect(Collectors.toList());
-
         response.setVariants(variants);
         return response;
     }
@@ -90,43 +84,30 @@ public class ProductServiceImpl implements ProductService {
         Product product = buildProductFromForm(new Product(), form);
         productRepository.save(product);
 
-        // Ánh xạ sang DTO
         ProductResponse dto = modelMapper.map(product, ProductResponse.class);
         dto.setCategoryName(product.getCategory().getName());
+        dto.setImageUrls(product.getImages().stream().map(ProductImage::getImageUrl).toList());
 
-        // Lấy danh sách ảnh
-        dto.setImageUrls(product.getImages()
-                .stream()
-                .map(ProductImage::getImageUrl)
-                .toList()
-        );
-
-        // Lấy danh sách variant
-        List<ProductVariantResponse> variantList = product.getVariants()
-                .stream()
-                .map(variant -> {
-                    ProductVariantResponse v = new ProductVariantResponse();
-                    v.setColorId(variant.getColor().getId());
-                    v.setColorName(variant.getColor().getName());
-                    v.setColorImageUrl(variant.getVariantImageUrl());
-                    v.setSize(variant.getSize().name());
-                    v.setQuantity(variant.getQuantity());
-                    return v;
-                })
+        List<ProductVariantResponse> variantList = product.getVariants().stream()
+                .map(variant -> new ProductVariantResponse(
+                        variant.getColor().getName(),
+                        variant.getVariantImageUrl(),
+                        variant.getSize().name(),
+                        variant.getQuantity()
+                ))
                 .toList();
-
         dto.setVariants(variantList);
         return dto;
     }
 
     @Override
     @Transactional
-    public ProductResponse updateProduct(Integer id, @Valid ProductForm form) {
+    public ProductResponse updateProduct(Integer id, ProductForm form) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.PRODUCT_NOT_FOUND_BY_ID,
                         "Không tìm thấy sản phẩm có ID: " + id));
 
-        // SKU: nếu khác & không null thì update & kiểm tra trùng
+        // SKU
         if (form.getSku() != null && !form.getSku().equals(existingProduct.getSku())) {
             Optional<Product> productWithSameSku = productRepository.findBySku(form.getSku());
             if (productWithSameSku.isPresent() && !productWithSameSku.get().getId().equals(id)) {
@@ -136,20 +117,12 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // Các field đơn giản
-        if (form.getName() != null) {
-            existingProduct.setName(form.getName());
-        }
-        if (form.getDescription() != null) {
-            existingProduct.setDescription(form.getDescription());
-        }
-        if (form.getPrice() != null) {
-            existingProduct.setPrice(form.getPrice());
-        }
-        if (form.getDiscountPrice() != null) {
-            existingProduct.setDiscountPrice(form.getDiscountPrice());
-        }
+        if (form.getName() != null) existingProduct.setName(form.getName());
+        if (form.getDescription() != null) existingProduct.setDescription(form.getDescription());
+        if (form.getPrice() != null) existingProduct.setPrice(form.getPrice());
+        if (form.getDiscountPrice() != null) existingProduct.setDiscountPrice(form.getDiscountPrice());
 
-        // Update category nếu gửi categoryId
+        // Update category
         if (form.getCategoryId() != null) {
             Category category = categoryRepository.findById(form.getCategoryId())
                     .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.CATEGORY_NOT_FOUND_BY_ID,
@@ -157,18 +130,31 @@ public class ProductServiceImpl implements ProductService {
             existingProduct.setCategory(category);
         }
 
-        // Ảnh: chỉ update nếu gửi imageUrls
-        if (form.getImageUrls() != null) {
+        // Ảnh sản phẩm
+        if (form.getImageFiles() != null && form.getImageFiles().length > 0) {
+            // Xóa ảnh cũ
+            existingProduct.getImages().forEach(image -> fileStorageService.deleteFileByUrl(image.getImageUrl()));
             existingProduct.getImages().clear();
-            for (String imageUrl : form.getImageUrls()) {
-                ProductImage image = new ProductImage();
-                image.setImageUrl(imageUrl);
-                image.setProduct(existingProduct);
-                existingProduct.getImages().add(image);
+            try {
+                List<String> imageUrls = new ArrayList<>();
+                for (MultipartFile file : form.getImageFiles()) {
+                    if (!file.isEmpty()) {
+                        String imageUrl = fileStorageService.storeFile(file, "products");
+                        imageUrls.add(imageUrl);
+                    }
+                }
+                for (String imageUrl : imageUrls) {
+                    ProductImage image = new ProductImage();
+                    image.setImageUrl(imageUrl);
+                    image.setProduct(existingProduct);
+                    existingProduct.getImages().add(image);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Lỗi khi upload ảnh sản phẩm", e);
             }
         }
 
-        // Variants: merge nếu có
+        // Variants
         if (form.getVariant() != null) {
             Map<String, ProductVariant> existingMap = existingProduct.getVariants().stream()
                     .collect(Collectors.toMap(
@@ -176,59 +162,58 @@ public class ProductServiceImpl implements ProductService {
                             Function.identity()
                     ));
 
-
             for (ProductVariantForm variantReq : form.getVariant()) {
                 String key = variantReq.getColorId() + "-" + variantReq.getSize().name();
-
                 Color color = colorRepository.findById(variantReq.getColorId())
                         .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID,
                                 "Không tìm thấy màu với ID: " + variantReq.getColorId()));
 
+                String variantImageUrl = null;
+                if (variantReq.getVariantImageFile() != null && !variantReq.getVariantImageFile().isEmpty()) {
+                    try {
+                        variantImageUrl = fileStorageService.storeFile(variantReq.getVariantImageFile(), "variants");
+                    } catch (IOException e) {
+                        throw new RuntimeException("Lỗi khi upload ảnh variant", e);
+                    }
+                }
+
                 if (existingMap.containsKey(key)) {
                     ProductVariant variant = existingMap.get(key);
+                    if (variantImageUrl != null && variant.getVariantImageUrl() != null) {
+                        fileStorageService.deleteFileByUrl(variant.getVariantImageUrl());
+                    }
                     variant.setQuantity(variantReq.getQuantity());
-                    variant.setVariantImageUrl(variantReq.getColorImageUrl());
+                    if (variantImageUrl != null) {
+                        variant.setVariantImageUrl(variantImageUrl);
+                    }
                 } else {
                     ProductVariant newVariant = new ProductVariant();
                     newVariant.setProduct(existingProduct);
                     newVariant.setColor(color);
                     newVariant.setSize(variantReq.getSize());
                     newVariant.setQuantity(variantReq.getQuantity());
-                    newVariant.setVariantImageUrl(variantReq.getColorImageUrl());
+                    newVariant.setVariantImageUrl(variantImageUrl);
                     existingProduct.getVariants().add(newVariant);
                 }
             }
         }
 
-        // Lưu lại product
         productRepository.save(existingProduct);
 
-        // Mapping ra DTO
         ProductResponse dto = modelMapper.map(existingProduct, ProductResponse.class);
         dto.setCategoryName(existingProduct.getCategory().getName());
-
-        dto.setImageUrls(existingProduct.getImages()
-                .stream()
-                .map(ProductImage::getImageUrl)
-                .toList());
-
-        List<ProductVariantResponse> variantList = existingProduct.getVariants()
-                .stream()
-                .map(variant -> {
-                    ProductVariantResponse v = new ProductVariantResponse();
-                    v.setColorId(variant.getColor().getId());
-                    v.setColorName(variant.getColor().getName());
-                    v.setColorImageUrl(variant.getVariantImageUrl());
-                    v.setSize(variant.getSize().name());
-                    v.setQuantity(variant.getQuantity());
-                    return v;
-                })
+        dto.setImageUrls(existingProduct.getImages().stream().map(ProductImage::getImageUrl).toList());
+        List<ProductVariantResponse> variantList = existingProduct.getVariants().stream()
+                .map(variant -> new ProductVariantResponse(
+                        variant.getColor().getName(),
+                        variant.getVariantImageUrl(),
+                        variant.getSize().name(),
+                        variant.getQuantity()
+                ))
                 .toList();
-
         dto.setVariants(variantList);
         return dto;
     }
-
 
     @Override
     @Transactional
@@ -250,17 +235,14 @@ public class ProductServiceImpl implements ProductService {
                 .and(ProductSpecification.isInStock(filterProduct.getInStock()));
         Pageable pageable = PageRequest.of(filterProduct.getPage(), filterProduct.getSize());
         Page<Product> page = productRepository.findAll(specification, pageable);
-
         return page.map(product -> modelMapper.map(product, FilterProductResponse.class));
     }
 
     private Product buildProductFromForm(Product product, ProductForm form) {
-        // Validate category
         Category category = categoryRepository.findById(form.getCategoryId())
                 .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.CATEGORY_NOT_FOUND_BY_ID,
                         "Không tìm thấy danh mục với ID: " + form.getCategoryId()));
 
-        // Validate price
         if (form.getPrice() == null || form.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException(ErrorCodeConstant.INVALID_PRICE, "Giá sản phẩm phải lớn hơn 0");
         }
@@ -269,7 +251,6 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessException(ErrorCodeConstant.INVALID_PRICE, "Giá khuyến mãi phải nhỏ hơn giá gốc");
         }
 
-        // Set product fields
         product.setName(form.getName());
         product.setSku(form.getSku());
         product.setDescription(form.getDescription());
@@ -278,23 +259,33 @@ public class ProductServiceImpl implements ProductService {
         product.setInStock(true);
         product.setCategory(category);
 
-        // Set images
-        if (form.getImageUrls() != null) {
-            List<ProductImage> images = form.getImageUrls().stream()
-                    .map(url -> {
-                        ProductImage img = new ProductImage();
-                        img.setImageUrl(url);
-                        img.setProduct(product);
-                        return img;
-                    })
-                    .toList();
-            product.setImages(images);
+        // Xử lý ảnh sản phẩm
+        if (form.getImageFiles() != null && form.getImageFiles().length > 0) {
+            try {
+                List<String> imageUrls = new ArrayList<>();
+                for (MultipartFile file : form.getImageFiles()) {
+                    if (!file.isEmpty()) {
+                        String imageUrl = fileStorageService.storeFile(file, "products");
+                        imageUrls.add(imageUrl);
+                    }
+                }
+                List<ProductImage> images = imageUrls.stream()
+                        .map(url -> {
+                            ProductImage img = new ProductImage();
+                            img.setImageUrl(url);
+                            img.setProduct(product);
+                            return img;
+                        })
+                        .toList();
+                product.setImages(images);
+            } catch (IOException e) {
+                throw new RuntimeException("Lỗi khi upload ảnh sản phẩm", e);
+            }
         }
 
-        // Set variants
+        // Xử lý variants
         if (form.getVariant() != null) {
             List<ProductVariant> variants = new ArrayList<>();
-
             for (ProductVariantForm variantReq : form.getVariant()) {
                 Color color = colorRepository.findById(variantReq.getColorId())
                         .orElseThrow(() -> new NotFoundException(ErrorCodeConstant.COLOR_NOT_FOUND_BY_ID,
@@ -304,16 +295,23 @@ public class ProductServiceImpl implements ProductService {
                     throw new BusinessException(ErrorCodeConstant.INVALID_SIZE, "Size không được để trống");
                 }
 
+                String variantImageUrl = null;
+                if (variantReq.getVariantImageFile() != null && !variantReq.getVariantImageFile().isEmpty()) {
+                    try {
+                        variantImageUrl = fileStorageService.storeFile(variantReq.getVariantImageFile(), "variants");
+                    } catch (IOException e) {
+                        throw new RuntimeException("Lỗi khi upload ảnh variant", e);
+                    }
+                }
+
                 ProductVariant variant = new ProductVariant();
                 variant.setProduct(product);
                 variant.setColor(color);
                 variant.setSize(variantReq.getSize());
                 variant.setQuantity(variantReq.getQuantity());
-                variant.setVariantImageUrl(variantReq.getColorImageUrl());
-
+                variant.setVariantImageUrl(variantImageUrl);
                 variants.add(variant);
             }
-
             product.setVariants(variants);
         }
 

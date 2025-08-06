@@ -1,4 +1,4 @@
-package com.example.rubiesfashionstore.model;
+package com.example.rubiesfashionstore.enums;
 
 public enum OrderStatus {
     PENDING,        // Chờ xử lý

@@ -1,5 +1,6 @@
 package com.example.rubiesfashionstore.model;
 
+import com.example.rubiesfashionstore.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

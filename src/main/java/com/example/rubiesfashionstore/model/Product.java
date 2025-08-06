@@ -66,4 +66,5 @@ public class Product {
         }
         variants.clear();
     }
+
 }

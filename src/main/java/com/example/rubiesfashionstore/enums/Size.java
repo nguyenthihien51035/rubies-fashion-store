@@ -1,4 +1,4 @@
-package com.example.rubiesfashionstore.model;
+package com.example.rubiesfashionstore.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
